@@ -1,14 +1,11 @@
 package net.cloudcentrik.textalk;
 import java.io.*;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static net.cloudcentrik.textalk.TextTalkUtils.log;
-
 public class AppPropertyUtils {
-    public static final String propertyFileName="/home/ismail/Desktop/textalk/app.properties";
+    public static final String propertyFileName= "/home/ismail/Desktop/textalk/app.properties";
 
     public static Map<String,String> getPropertyMap() throws Exception{
         Map<String,String> propertyMap=new HashMap<String, String>();
@@ -24,8 +21,6 @@ public class AppPropertyUtils {
         propertyMap.put("LAST_UPDATE",prop.getProperty("LAST_UPDATE"));
 
         in.close();
-
-        //log(propertyMap.toString());
 
         return propertyMap;
     }

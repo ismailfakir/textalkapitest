@@ -1,8 +1,10 @@
 package net.cloudcentrik.textalk;
 
+import ch.qos.logback.classic.Logger;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.client.JSONRPC2Session;
+import com.thetransactioncompany.jsonrpc2.client.JSONRPC2SessionOptions;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -12,11 +14,14 @@ import java.util.List;
 
 public class TextTalkUtils {
 
+    private static Logger log=AppLogger.getLogger(TextTalkUtils.class.getName());
+
 
     public static String USER_NAME="";
     public static String USER_PASSWORD="";
     public static String BASE_URL="";
     public static String TOKEN="";
+    public static String LAST_UPDATE="";
 
 
     public static String REQUEST_URL=BASE_URL+"&auth="+TOKEN;
@@ -24,6 +29,8 @@ public class TextTalkUtils {
 
     public static String getToken() throws Exception{
         String token=null;
+        loadConfigurations();
+        //log.info(BASE_URL);
 
         URL serverURL = new URL(BASE_URL);
         JSONRPC2Session mySession = new JSONRPC2Session(serverURL);
@@ -45,20 +52,18 @@ public class TextTalkUtils {
 
         // Print response result / error
         if (response.indicatesSuccess()){
-            System.out.println("TOKEN: "+response.getResult());
+            //System.out.println("TOKEN: "+response.getResult());
+            log.info("TOKEN: "+response.getResult());
             token=response.getResult().toString();
         } else{
-            System.out.println(response.getError().getMessage());
+            //System.out.println(response.getError().getMessage());
+            log.error(response.getError().getMessage());
             token=response.getError().getMessage();
         }
 
         return token;
     }
 
-    /*consoule print */
-    public static void log(String str){
-        System.out.println(str);
-    }
 
     public static String  getCurrentTime(){
 
@@ -82,10 +87,11 @@ public class TextTalkUtils {
         //long minutes = TimeUnit.MILLISECONDS.convert(diff,TimeUnit.MINUTES);
         long hours = diff/(60*60 * 1000);
 
-        log(hours+" passed");
+        //log.info(hours+" Hours passed since token update");
 
-        if(hours<12){
-            return false;
+        if(hours>12){
+            log.info("token update needed");
+            return true;
         }else {
             return false;
         }
@@ -96,19 +102,27 @@ public class TextTalkUtils {
     public static void updateToken() throws Exception{
 
         if(isUpdateToken()){
-            AppPropertyUtils.updateProperty("TOKEN",getToken());
+            log.info("Updating token");
+            String last_update=getToken();
+            AppPropertyUtils.updateProperty("TOKEN",last_update);
+            AppPropertyUtils.updateProperty("LAST_UPDATE",getCurrentTime());
+            log.info("Token updated successfully");
         }
 
     }
 
     public static void loadConfigurations() throws Exception{
-        updateToken();
+        //updateToken();
         USER_NAME=AppPropertyUtils.getProperty("USER_NAME");
         USER_PASSWORD=AppPropertyUtils.getProperty("USER_PASSWORD");
         BASE_URL=AppPropertyUtils.getProperty("BASE_URL");
         TOKEN=AppPropertyUtils.getProperty("TOKEN");
         REQUEST_URL= BASE_URL+"&auth="+TOKEN;
+
+        //log.info("Finished loading system configuration successfully");
+        //log.info("REQUEST URL: "+REQUEST_URL);
     }
+
 
 
 }

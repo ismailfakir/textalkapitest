@@ -1,5 +1,6 @@
 package net.cloudcentrik.textalk;
 
+import ch.qos.logback.classic.Logger;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.client.JSONRPC2Session;
@@ -14,9 +15,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static net.cloudcentrik.textalk.TextTalkUtils.log;
 
 public class TextalkApiClient {
+
+    private static final Logger log = AppLogger.getLogger(TextalkApiClient.class.getName());
 
     public static String getArticleList() throws Exception{
         String responseString=null;
@@ -77,7 +79,73 @@ public class TextalkApiClient {
         return responseString;
     }
 
-    private static String texTalkRequest(String method,List<Object> params,String id)throws Exception{
+    public static JSONRPC2Response texTalkBasicRequest(String method,List<Object> params,String id)throws Exception{
+
+        //url
+        URL serverURL = new URL(TextTalkUtils.REQUEST_URL);
+        JSONRPC2Session session = new JSONRPC2Session(serverURL);
+        session.setOptions(getSessionOptions());
+        session.setRawResponseInspector(new TextalkResponseInspector());
+        //request
+        JSONRPC2Request request = new JSONRPC2Request(method,params,id);
+        //response
+        JSONRPC2Response response=session.send(request);
+
+        return response;
+    }
+
+    /**
+     * Return JSONObject from text talk json rpc request
+     * @param method
+     * @param params
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    public static JSONObject texTalkJSONObjectRequest(String method,List<Object> params,String id)throws Exception{
+        JSONObject responseJson=null;
+
+        //url
+        URL serverURL = new URL(TextTalkUtils.REQUEST_URL);
+        JSONRPC2Session session = new JSONRPC2Session(serverURL);
+        session.setOptions(getSessionOptions());
+        //request
+        JSONRPC2Request request = new JSONRPC2Request(method,params,id);
+        //response
+        JSONRPC2Response response=session.send(request);
+
+        if (response.indicatesSuccess()){
+            responseJson=(JSONObject)response.getResult();
+        } else{
+            log.warn(response.getError().toJSONObject().toJSONString());
+        }
+
+        return responseJson;
+    }
+
+    public static JSONArray texTalkJJSONArrayRequest(String method,List<Object> params,String id)throws Exception{
+        JSONArray responseJson=null;
+
+        //url
+        URL serverURL = new URL(TextTalkUtils.REQUEST_URL);
+        JSONRPC2Session session = new JSONRPC2Session(serverURL);
+        session.setOptions(getSessionOptions());
+        //request
+        JSONRPC2Request request = new JSONRPC2Request(method,params,id);
+        //response
+        JSONRPC2Response response=session.send(request);
+
+        if (response.indicatesSuccess()){
+            responseJson=(JSONArray)response.getResult();
+        } else{
+            log.warn(response.getError().toJSONObject().toJSONString());
+        }
+
+        return responseJson;
+    }
+
+
+    public static String texTalkRequest(String method,List<Object> params,String id)throws Exception{
         String responseString=null;
 
         URL serverURL = new URL(TextTalkUtils.REQUEST_URL);
@@ -96,8 +164,11 @@ public class TextalkApiClient {
 
         JSONRPC2Request request = new JSONRPC2Request(method,params,id);
 
+        log.info(request.toJSONObject().toJSONString());
+
 
         JSONRPC2Response response=session.send(request);
+
 
 
         if (response.indicatesSuccess()){
@@ -110,6 +181,64 @@ public class TextalkApiClient {
         System.out.println(responseString);
 
         return responseString;
+    }
+
+
+    public static String texTalkStringRequest(String requestString)throws Exception{
+        String responseString=null;
+
+        URL serverURL = new URL(TextTalkUtils.REQUEST_URL);
+
+        //options
+        JSONRPC2SessionOptions options=new JSONRPC2SessionOptions();
+        options.setConnectTimeout(3000); //3 second
+        options.setReadTimeout(1000); // 1 second
+        options.setRequestContentType("application/json-rpc");
+        options.setAllowedResponseContentTypes(new String[]{"application/json"});
+        options.parseNonStdAttributes(true);
+
+        JSONRPC2Session session = new JSONRPC2Session(serverURL);
+        session.setOptions(options);
+
+
+        JSONRPC2Request request = JSONRPC2Request.parse(requestString);
+
+
+        JSONRPC2Response response=session.send(request);
+
+
+        if (response.indicatesSuccess()){
+            responseString=response.toJSONString();
+
+        } else{
+            responseString=response.getError().getMessage();
+        }
+
+        return responseString;
+    }
+
+    public static JSONObject texTalkJSONRequest(String method,List<Object> params,String id)throws Exception{
+        String responseString=null;
+
+        URL serverURL = new URL(TextTalkUtils.REQUEST_URL);
+
+        //options
+        JSONRPC2SessionOptions options=new JSONRPC2SessionOptions();
+        options.setConnectTimeout(3000); //3 second
+        options.setReadTimeout(1000); // 1 second
+        options.setRequestContentType("application/json-rpc");
+        options.setAllowedResponseContentTypes(new String[]{"application/json"});
+        options.parseNonStdAttributes(true);
+
+        JSONRPC2Session session = new JSONRPC2Session(serverURL);
+        session.setOptions(options);
+
+
+        JSONRPC2Request request = new JSONRPC2Request(method,params,id);
+
+        JSONRPC2Response response=session.send(request);
+
+        return (JSONObject)response.getResult();
     }
 
     /*get schema*/
@@ -165,9 +294,9 @@ public class TextalkApiClient {
         String response=null;
 
         final List<Object> params =new ArrayList<Object>();
-        params.add(null);
         params.add(jsonObject);
-        //params.add(fieldsArray);
+        //params.add(true);
+        params.add(fieldsArray);
 
         String method = entity.toString()+".create";
         String requestID = "create";
@@ -207,13 +336,30 @@ public class TextalkApiClient {
         return response;
     }
 
-    public static String getArticleListTest(TexTalkEntity entity) throws Exception{
-        String responseString=null;
+    public static int count(TexTalkEntity entity,Map<String,Object> selectorMAp) throws Exception{
+        String response=null;
+
+        final List<Object> params =new ArrayList<Object>();
+        params.add(selectorMAp);
+
+        String method = entity.toString()+".count";
+        String requestID = "count id";
+
+        response=texTalkRequest(method,params,requestID);
+
+        JSONRPC2Response jsonrpc2Response=JSONRPC2Response.parse(response);
+        int count=Integer.parseInt(jsonrpc2Response.getResult().toString());
+
+        return count;
+    }
+
+    public static JSONObject getArticleListTest(TexTalkEntity entity) throws Exception{
+        JSONObject responseJson=null;
 
 
         // Construct new request
         String method = entity.toString()+".list";//method
-        String requestID = "2";//request id
+        String requestID = "test request";//request id
         final List<Object> params =new ArrayList<Object>();//positional params
 
 
@@ -247,10 +393,55 @@ public class TextalkApiClient {
         //params.add(ArticleUtils.getListSelector(10,0,"uid",null));
 
 
-        responseString=texTalkRequest(method,params,requestID);
+        responseJson=texTalkJSONRequest(method,params,requestID);
 
 
-        return responseString;
+        return responseJson;
+    }
+
+    /**
+     *create default session options
+     *
+     */
+    public static JSONRPC2SessionOptions getSessionOptions(){
+        JSONRPC2SessionOptions options=new JSONRPC2SessionOptions();
+        options.setConnectTimeout(3000); //3 second
+        options.setReadTimeout(1000); // 1 second
+        options.setRequestContentType("application/json-rpc");
+        options.setAllowedResponseContentTypes(new String[]{"application/json"});
+        options.parseNonStdAttributes(true);
+        return options;
+    }
+
+    /**
+     * get list of Object
+     * @param entity
+     * @param propertyList
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray getAll(TexTalkEntity entity,List<String> propertyList)throws Exception{
+        JSONArray jsonResponse=null;
+
+        //sort
+        JSONObject sortObject=new JSONObject();
+        sortObject.put("sort","uid");
+
+        //params
+        JSONArray params=new JSONArray();
+        params.add(propertyList);
+        params.add(sortObject);
+
+
+        JSONRPC2Response response=TextalkApiClient.texTalkBasicRequest(entity.toString()+".list",params,"getAll");
+
+        if(response.indicatesSuccess()){
+            //log.info(response.toJSONObject().toJSONString());
+            jsonResponse=(JSONArray)response.getResult();
+        }else{
+            log.error(response.toJSONObject().toJSONString());
+        }
+        return jsonResponse;
     }
 
 

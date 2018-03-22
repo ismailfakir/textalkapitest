@@ -6,8 +6,6 @@ import net.minidev.json.JSONObject;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static net.cloudcentrik.textalk.TextTalkUtils.log;
-
 public class ArticleUtils {
 
     public static JSONArray getARticleFieldsArray(){
@@ -68,5 +66,21 @@ public class ArticleUtils {
     public static Map<String,Object> getDefaultListSelector(String selectorName, final Map<String,Object> filterMap){
 
         return getListSelector(500,0,"uid",selectorName,filterMap);
+    }
+
+    /* get a basic filter object */
+    public static Map<String,Object> getBasicFilterMap(String selectorName,final Map<String,Object> filterObjectMap){
+
+        Map<String,Object> filterMap=new LinkedHashMap<String,Object>();
+
+        JSONObject filterFields=new JSONObject();
+        for (String key:filterObjectMap.keySet()) {
+            filterFields.put(key,filterObjectMap.get(key));
+        }
+
+        filterMap.put(selectorName,filterFields);
+
+
+        return filterMap;
     }
 }

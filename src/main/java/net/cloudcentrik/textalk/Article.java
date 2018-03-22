@@ -2,7 +2,6 @@ package net.cloudcentrik.textalk;
 
 import net.minidev.json.JSONObject;
 
-import static net.cloudcentrik.textalk.TextTalkUtils.log;
 
 public class Article {
 
