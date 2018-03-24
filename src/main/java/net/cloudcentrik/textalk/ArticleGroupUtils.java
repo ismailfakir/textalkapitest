@@ -2,6 +2,7 @@ package net.cloudcentrik.textalk;
 
 import ch.qos.logback.classic.Logger;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
+import net.cloudcentrik.textalk.Utils.JsonUtils;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -15,29 +16,18 @@ public class ArticleGroupUtils {
 
     private static final Logger log = AppLogger.getLogger( App.class.getName() );
 
-    public static JSONObject wrapeInLanguage(Map<String,String> laguageMap){
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.putAll(laguageMap);
-        return jsonObject;
-    }
-
-    public static JSONObject getJsonObject(String key,String value){
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put(key,value);
-        return jsonObject;
-    }
 
     public static JSONObject createArticleGroupJson(){
         //readonly value should be omitted
         JSONObject jsonObject=new JSONObject();
-        jsonObject.put("baseName",getJsonObject("sv","example Article group"));
+        jsonObject.put("baseName",JsonUtils.getJsonObject("sv","example Article group"));
         //jsonObject.put("children",new JSONArray());
         //jsonObject.put("description",getJsonObject("sv","example Article group descriptions"));
         jsonObject.put("hidden",false);
         //jsonObject.put("image",null);
-        jsonObject.put("metaDescription",getJsonObject("sv","metaDescription"));
+        jsonObject.put("metaDescription",JsonUtils.getJsonObject("sv","metaDescription"));
         //jsonObject.put("metaKeywords",getJsonObject("sv","metaKeywords"));
-        jsonObject.put("name",getJsonObject("sv","Electronics"));
+        jsonObject.put("name",JsonUtils.getJsonObject("sv","Electronics"));
         //jsonObject.put("pageItems",new JSONArray());
         //jsonObject.put("pageTitle",getJsonObject("sv","pageTitle Electronics"));
         jsonObject.put("parent",null);
@@ -49,14 +39,14 @@ public class ArticleGroupUtils {
     public static JSONObject createArticleGroup(ArticleGroup articleGroup){
         //readonly value should be omitted
         JSONObject jsonObject=new JSONObject();
-        jsonObject.put("baseName",getJsonObject("sv","example Article group"));
+        jsonObject.put("baseName",JsonUtils.getJsonObject("sv","example Article group"));
         //jsonObject.put("children",new JSONArray());
         //jsonObject.put("description",getJsonObject("sv","example Article group descriptions"));
         jsonObject.put("hidden",false);
         //jsonObject.put("image",null);
-        jsonObject.put("metaDescription",getJsonObject("sv","metaDescription"));
+        jsonObject.put("metaDescription",JsonUtils.getJsonObject("sv","metaDescription"));
         //jsonObject.put("metaKeywords",getJsonObject("sv","metaKeywords"));
-        jsonObject.put("name",getJsonObject("sv","Electronics"));
+        jsonObject.put("name",JsonUtils.getJsonObject("sv","Electronics"));
         //jsonObject.put("pageItems",new JSONArray());
         //jsonObject.put("pageTitle",getJsonObject("sv","pageTitle Electronics"));
         jsonObject.put("parent",null);
@@ -65,22 +55,103 @@ public class ArticleGroupUtils {
         return jsonObject;
     }
 
-    private static Boolean addArticleGroup(JSONObject articleGroupJson)throws Exception{
+    public static JSONObject createArticleGroupJson(Map<String,String> baseName,Map<String,String> name,Map<String,String> description,Boolean hidden){
+        //readonly value should be omitted
+        JSONObject jsonObject=new JSONObject();
+        jsonObject.put("baseName", JsonUtils.wrapInLanguage(baseName));
+        //jsonObject.put("children",new JSONArray());
+        jsonObject.put("description",JsonUtils.wrapInLanguage(description));
+        jsonObject.put("hidden",hidden);
+        //jsonObject.put("image",null);
+        //jsonObject.put("metaDescription",getJsonObject("sv","metaDescription"));
+        //jsonObject.put("metaKeywords",getJsonObject("sv","metaKeywords"));
+        jsonObject.put("name",JsonUtils.wrapInLanguage(name));
+        //jsonObject.put("pageItems",new JSONArray());
+        //jsonObject.put("pageTitle",getJsonObject("sv","pageTitle Electronics"));
+        jsonObject.put("parent",null);
+        //jsonObject.put("uid",null);
+        //jsonObject.put("url",getJsonObject("sv",""));
+        return jsonObject;
+    }
+
+    /**
+     * Create a article group Json object
+     * @param baseName
+     * @param name
+     * @param description
+     * @param hidden
+     * @return
+     */
+    public static JSONObject createArticleGroupJson(String baseName,String name,String description,Boolean hidden){
+        //readonly value should be omitted
+        JSONObject jsonObject=new JSONObject();
+        jsonObject.put("baseName", JsonUtils.getJsonObject("sv",baseName));
+        //jsonObject.put("children",new JSONArray());
+        jsonObject.put("description",JsonUtils.getJsonObject("sv",description));
+        jsonObject.put("hidden",hidden);
+        //jsonObject.put("image",null);
+        //jsonObject.put("metaDescription",getJsonObject("sv","metaDescription"));
+        //jsonObject.put("metaKeywords",getJsonObject("sv","metaKeywords"));
+        jsonObject.put("name",JsonUtils.getJsonObject("sv",name));
+        //jsonObject.put("pageItems",new JSONArray());
+        //jsonObject.put("pageTitle",getJsonObject("sv","pageTitle Electronics"));
+        jsonObject.put("parent",null);
+        //jsonObject.put("uid",null);
+        //jsonObject.put("url",getJsonObject("sv",""));
+        return jsonObject;
+    }
+
+    /**
+     * Update a article group
+     * @param uid
+     * @param articleGroupJson
+     * @return
+     * @throws Exception
+     */
+    public static JSONObject updateArticleGroup(int uid,JSONObject articleGroupJson)throws Exception{
+
+        JSONObject responseJson=null;
+
+        //params
+        JSONArray param=new JSONArray();
+        param.add(uid);
+        param.add(articleGroupJson);
+        param.add(ArticleGroupUtils.PROPERTY_LIST);
+
+        JSONRPC2Response response=TextalkApiClient.texTalkBasicRequest("Articlegroup.set",param,"1");
+        if(response.indicatesSuccess()){
+            //log.info(response.toJSONObject().toJSONString());
+            responseJson=(JSONObject) response.getResult();
+
+        }else{
+            log.error(response.toJSONObject().toJSONString());
+
+        }
+        return responseJson;
+    }
+
+    /**
+     * Create a new Article group
+     * @param articleGroupJson
+     * @return
+     * @throws Exception
+     */
+    public static JSONObject addNewArticleGroup(JSONObject articleGroupJson)throws Exception{
+        JSONObject jsonResponse=null;
 
         //params
         JSONArray param=new JSONArray();
         param.add(null);
         param.add(articleGroupJson);
+        param.add(ArticleGroupUtils.PROPERTY_LIST);
 
         JSONRPC2Response response=TextalkApiClient.texTalkBasicRequest("Articlegroup.set",param,"1");
         if(response.indicatesSuccess()){
-            log.info(response.toJSONObject().toJSONString());
-            return true;
+            jsonResponse=(JSONObject)response.getResult();
         }else{
             log.error(response.toJSONObject().toJSONString());
-            return false;
         }
-
+        return jsonResponse;
     }
 
     /**
@@ -140,7 +211,12 @@ public class ArticleGroupUtils {
         return jsonResponse;
     }
 
-    public static JSONArray getAllArticleGroup()throws Exception{
+    /**
+     * Get list of article group
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray getArticleGroupList()throws Exception{
         return TextalkApiClient.getAll(TexTalkEntity.ARTICLE_GROUP,ArticleGroupUtils.PROPERTY_LIST);
     }
 

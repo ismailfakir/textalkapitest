@@ -444,5 +444,28 @@ public class TextalkApiClient {
         return jsonResponse;
     }
 
+    /**
+     * List all object
+     * @param entity
+     * @return
+     * @throws Exception
+     */
+    public static JSONArray list(TexTalkEntity entity) throws Exception{
+        JSONArray jsonResponse=null;
+
+        final List<Object> params =new ArrayList<Object>();
+        params.add(true);
+        params.add(true);
+
+        JSONRPC2Response response=TextalkApiClient.texTalkBasicRequest(entity.toString()+".list",params,"getAll");
+
+        if(response.indicatesSuccess()){
+            jsonResponse=(JSONArray)response.getResult();
+        }else{
+            log.error(response.toJSONObject().toJSONString());
+        }
+        return jsonResponse;
+    }
+
 
 }

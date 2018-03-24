@@ -16,31 +16,20 @@ public class TextTalkUtils {
 
     private static Logger log=AppLogger.getLogger(TextTalkUtils.class.getName());
 
-
-    public static String USER_NAME="";
-    public static String USER_PASSWORD="";
-    public static String BASE_URL="";
-    public static String TOKEN="";
-    public static String LAST_UPDATE="";
-
-
-    public static String REQUEST_URL=BASE_URL+"&auth="+TOKEN;
+    public static String REQUEST_URL="";
 
 
     public static String getToken() throws Exception{
         String token=null;
-        loadConfigurations();
-        //log.info(BASE_URL);
-
-        URL serverURL = new URL(BASE_URL);
+        URL serverURL = new URL(AppConfiguration.getBaseUrl());
         JSONRPC2Session mySession = new JSONRPC2Session(serverURL);
 
         // Construct new request
         String method = "Admin.login";
         String requestID = "1";
         final List<Object> params =new ArrayList<Object>();
-        params.add(USER_NAME);
-        params.add(USER_PASSWORD);
+        params.add(AppConfiguration.getConfiguration(AppConfiguration.USER_NAME));
+        params.add(AppConfiguration.getConfiguration(AppConfiguration.USER_PASSWORD));
 
         JSONRPC2Request request = new JSONRPC2Request(method,params,requestID);
 
@@ -82,14 +71,14 @@ public class TextTalkUtils {
     public static boolean isUpdateToken() throws Exception{
 
         Date nowDate=getDate(getCurrentTime());
-        Date lastUpdateaDate=getDate(AppPropertyUtils.getProperty("LAST_UPDATE"));
+        Date lastUpdateaDate=getDate(AppConfiguration.getConfiguration(AppConfiguration.LAST_UPDATE));
         long diff = nowDate.getTime() - lastUpdateaDate.getTime();
         //long minutes = TimeUnit.MILLISECONDS.convert(diff,TimeUnit.MINUTES);
         long hours = diff/(60*60 * 1000);
 
         //log.info(hours+" Hours passed since token update");
 
-        if(hours>12){
+        if(hours>12.0){
             log.info("token update needed");
             return true;
         }else {
@@ -103,24 +92,18 @@ public class TextTalkUtils {
 
         if(isUpdateToken()){
             log.info("Updating token");
-            String last_update=getToken();
-            AppPropertyUtils.updateProperty("TOKEN",last_update);
-            AppPropertyUtils.updateProperty("LAST_UPDATE",getCurrentTime());
+            AppConfiguration.setConfiguration(AppConfiguration.TOKEN,getToken());
+            AppConfiguration.setConfiguration(AppConfiguration.LAST_UPDATE,TextTalkUtils.getCurrentTime());
             log.info("Token updated successfully");
+            return;
         }
 
     }
 
     public static void loadConfigurations() throws Exception{
-        //updateToken();
-        USER_NAME=AppPropertyUtils.getProperty("USER_NAME");
-        USER_PASSWORD=AppPropertyUtils.getProperty("USER_PASSWORD");
-        BASE_URL=AppPropertyUtils.getProperty("BASE_URL");
-        TOKEN=AppPropertyUtils.getProperty("TOKEN");
-        REQUEST_URL= BASE_URL+"&auth="+TOKEN;
+        updateToken();
+        REQUEST_URL= AppConfiguration.getRequestUrl();
 
-        //log.info("Finished loading system configuration successfully");
-        //log.info("REQUEST URL: "+REQUEST_URL);
     }
 
 

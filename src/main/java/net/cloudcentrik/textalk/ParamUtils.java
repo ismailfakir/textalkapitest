@@ -76,4 +76,20 @@ public class ParamUtils {
 
         return selectorMap;
     }
+
+    public static Map<String,Object> getFiltersObject(String selectorName, String key,String value){
+
+        //selector map
+        Map<String,Object> selectorMap=new LinkedHashMap<String,Object>();
+
+        JSONObject selectionObject=new JSONObject();
+        selectionObject.put(key,value);
+
+        JSONObject filterObject=new JSONObject();
+        filterObject.put(selectorName,selectionObject);
+
+        selectorMap.put("filters",filterObject);
+
+        return selectorMap;
+    }
 }

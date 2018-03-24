@@ -2,17 +2,10 @@ package net.cloudcentrik.textalk;
 
 import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.org.apache.xerces.internal.xs.StringList;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
-import jdk.nashorn.api.scripting.JSObject;
-import jdk.nashorn.internal.objects.Global;
-import jdk.nashorn.internal.parser.JSONParser;
+import net.cloudcentrik.textalk.Utils.JsonUtils;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.JSONStyle;
-import net.minidev.json.JSONUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -21,22 +14,16 @@ import java.util.*;
  */
 public class App {
 
-    private static final Logger log = AppLogger.getLogger( App.class.getName() );
+    private static final Logger log = AppLogger.getLogger(App.class.getName());
 
 
     public static void main(String[] args) {
 
         try {
 
-            //AppPropertyUtils.updateProperty("LAST_UPDATE",TextTalkUtils.getCurrentTime());
             TextTalkUtils.loadConfigurations();
             //TextTalkUtils.getToken();
-            //testProperty();
-            //testRequest();
-            //testCountRequest();
-            //testGetSchemaRequest();
-            //testGetLanguageRequest();
-            testArticleGroup();
+            testLanguageRequest();
 
         } catch (Exception e) {
 
@@ -147,9 +134,9 @@ public class App {
         log.info(response);
     }
 
-    private static void testGetLanguageRequest()throws Exception{
+    private static void testLanguageRequest()throws Exception{
 
-        Map<String,Object> languageMapFilter=new LinkedHashMap<String, Object>();
+        /*Map<String,Object> languageMapFilter=new LinkedHashMap<String, Object>();
         languageMapFilter.put("equals",true);
 
         Map<String,Object> filterObject=ParamUtils.getBasicFilterMap("active",languageMapFilter);
@@ -169,35 +156,34 @@ public class App {
         Lanuage l=mapper.readValue(jsonResponse.toJSONString(),Lanuage.class);
         log.info("uid : "+l.getUid());
         log.info("urrency : "+l.getDefaultCurrency());
-        log.info("active : "+l.getActive());
+        log.info("active : "+l.getActive());*/
+
+        //log.info(LanguageUtils.getLanguageList().toJSONString());
+        log.info(TextalkApiClient.list(TexTalkEntity.ARTICLE_GROUP).size()+"");
 
     }
 
     private static void testArticleGroup()throws Exception{
 
-        /*JSONObject articleGroupJson=ArticleGroupUtils.createArticleGroupJson();
-        //log.info(articleGroupJson.toJSONString());
-        //log.info(articleGroupJson.toJSONString(JSONStyle.MAX_COMPRESS));
-
-        //String validate=TextalkApiClient.validate(TexTalkEntity.ARTICLE_GROUP,articleGroupJson);
-       JSONArray p=new JSONArray();
-        p.add(null);
-        p.add(articleGroupJson);
-        JSONRPC2Response r=TextalkApiClient.texTalkBasicRequest("Articlegroup.set",p,"1");
-
-        JSONArray fields=new JSONArray();
-        fields.add("uid");
-        fields.add("name");
-
-        //String response=TextalkApiClient.create(TexTalkEntity.ARTICLE_GROUP,articleGroupJson,fields);
-        //log.info(response);*/
-
-        int uid=5102136;
+        int uid=5104118;
         String name="cloths";
         //log.info(ArticleGroupUtils.getArticleGroupByUid(uid).toJSONString());
-        log.info(ArticleGroupUtils.getArticleGroupByName(name).toJSONString());
+        //log.info(ArticleGroupUtils.getArticleGroupByName(name).toJSONString());
         //log.info(ArticleGroupUtils.getAllArticleGroup().toJSONString());
         //log.info(TextalkApiClient.getAll(TexTalkEntity.CUSTOMER,null).toJSONString());
+
+        /*Map<String,String> lan=new HashMap<String, String>();
+        lan.put("sv","Datorkomponenter");
+        lan.put("en","Computer Components");
+        JSONObject jsonObject=ArticleGroupUtils.createArticleGroupJson(lan,lan,lan,false);
+        log.info(ArticleGroupUtils.addNewArticleGroup(jsonObject).toJSONString());*/
+
+        //lan.put("en","All kind of books");
+
+        //JSONObject jsonObject=JsonUtils.wrapInLanguage("description",lan);
+        //log.info(ArticleGroupUtils.updateArticleGroup(uid,jsonObject).toJSONString());
+        log.info(ArticleGroupUtils.getArticleGroupByUid(uid).toJSONString());
+
 
     }
 
