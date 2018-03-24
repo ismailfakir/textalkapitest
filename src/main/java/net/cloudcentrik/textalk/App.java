@@ -159,7 +159,8 @@ public class App {
         log.info("active : "+l.getActive());*/
 
         //log.info(LanguageUtils.getLanguageList().toJSONString());
-        log.info(TextalkApiClient.list(TexTalkEntity.ARTICLE_GROUP).size()+"");
+        List<String> language=LanguageUtils.getLanguageList();
+        log.info(language.toString());
 
     }
 
